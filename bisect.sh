@@ -5,7 +5,8 @@ set -eo pipefail
 # config
 declare -a indirs=("draft" "raw")
 declare -a scales=("95%" "90%" "85%" "80%" "75%" "70%" "65%" "60%" "55%" "50%" "45%" "40%")
-limit=5242880
+# limit=5242880
+limit=1048576
 
 # get directory of the script as default working directory
 currdir=$(dirname "${BASH_SOURCE[0]}")
@@ -115,7 +116,7 @@ function bisect_resize() {
 }
 
 # attempt to convert images into smaller ones
-for infile in "$indir"/*.jpg; do
+for infile in "$indir"/*.jpg "$indir"/*.JPG; do
     outfile="$outdir"/"${infile##*/}"
     insize=$(stat -f%z "$infile")
     if [ "$insize" -le "$limit" ]; then
