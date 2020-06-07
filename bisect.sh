@@ -91,7 +91,8 @@ function bisect_resize() {
 
     while true; do
         if [ $low -ge $high ]; then
-            printf "reached final scale low=$low, high=$high, got size $size\n"
+            local size=$(resize "$infile" "$outfile" "$high")
+            printf "reached final scale low=$low%%, high=$high%%, got size $size\n"
             break
         fi
         local mid=$(((low + high) / 2))
@@ -105,6 +106,12 @@ function bisect_resize() {
             high=$((mid - 1))
         fi
     done
+
+    if [ "$size" -gt "$limit" ]; then
+        mid=$((high - 1))
+        local size=$(resize "$infile" "$outfile" "$mid")
+        printf "last attempt to scale at $mid%%, got size $size\n"
+    fi
 }
 
 # attempt to convert images into smaller ones
