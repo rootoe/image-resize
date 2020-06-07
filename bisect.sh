@@ -83,24 +83,24 @@ function bisect_resize() {
         return
     fi
     # check high
-    local size=$(resize "$infile" "$outfile" "$high")
+    size=$(resize "$infile" "$outfile" "$high")
     if [ "$size" -le "$limit" ]; then
         printf "no need to resize, highest scale is %s%% (%d)\n" "$high" "$size"
         return
     fi
 
     while true; do
-        if [ $low -ge $high ]; then
-            local size=$(resize "$infile" "$outfile" "$high")
+        if [ $low -ge $high ] || [ $((low + 1 - high)) -eq 0 ]; then
+            size=$(resize "$infile" "$outfile" "$high")
             printf "reached final scale low=$low%%, high=$high%%, got size $size\n"
             break
         fi
         local mid=$(((low + high) / 2))
-        local size=$(resize "$infile" "$outfile" "$mid")
-        printf "attempt to resize, current scale is %s%% (%d), " "$mid" "$size"
+        size=$(resize "$infile" "$outfile" "$mid")
+        printf "attempt to resize, current scale is $mid%% ($size) of [$low, $high], "
         if [ "$size" -le "$limit" ]; then
             echo "it's too small"
-            low=$((mid + 1))
+            low=$((mid + 0))
         else
             echo "it's too large"
             high=$((mid - 1))
@@ -109,7 +109,7 @@ function bisect_resize() {
 
     if [ "$size" -gt "$limit" ]; then
         mid=$((high - 1))
-        local size=$(resize "$infile" "$outfile" "$mid")
+        size=$(resize "$infile" "$outfile" "$mid")
         printf "last attempt to scale at $mid%%, got size $size\n"
     fi
 }
