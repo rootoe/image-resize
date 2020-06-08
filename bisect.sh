@@ -4,8 +4,6 @@ set -eo pipefail
 
 # config
 declare -a indirs=("draft" "raw")
-declare -a scales=("95%" "90%" "85%" "80%" "75%" "70%" "65%" "60%" "55%" "50%" "45%" "40%")
-# limit=5242880
 limit=1048576
 
 # get directory of the script as default working directory
@@ -92,8 +90,13 @@ function bisect_resize() {
 
     while true; do
         if [ $low -ge $high ] || [ $((low + 1 - high)) -eq 0 ]; then
-            size=$(resize "$infile" "$outfile" "$high")
-            printf "reached final scale low=$low%%, high=$high%%, got size $size\n"
+            if [ $low -ge $high ]; then
+                mid=$low
+            else
+                mid=$high
+            fi
+            size=$(resize "$infile" "$outfile" "$mid")
+            printf "reached final scale mid=$mid%% whereas low=$low%%, high=$high%%, got size $size\n"
             break
         fi
         local mid=$(((low + high) / 2))
@@ -109,7 +112,7 @@ function bisect_resize() {
     done
 
     if [ "$size" -gt "$limit" ]; then
-        mid=$((high - 1))
+        mid=$((mid - 1))
         size=$(resize "$infile" "$outfile" "$mid")
         printf "last attempt to scale at $mid%%, got size $size\n"
     fi
